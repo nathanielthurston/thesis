@@ -75,7 +75,7 @@ for (;;) {
 	++$childCount;
 	$pid = fork;
 	if ($pid == 0) {
-		$searchWords = "-B 6";
+		$searchWords = "-B 9";
 		if ($bestHole eq '') {
 			$bestHole = 'root';
 			$searchWords = '';
