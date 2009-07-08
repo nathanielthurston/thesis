@@ -9,6 +9,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 class CanonicalName {
 public:
@@ -22,6 +23,9 @@ private:
 	void addSubstitution(std::string& a, std::string& b);
 	std::string reduce(std::string s);
 	std::string getClass(std::string& s);
+	void addRelatorInternal(std::string relator);
+	void initImpl();
+	void initSubstitutions();
 	struct Substitution {
 		Substitution() {}
 		Substitution(std::string s_, std::string rep_) :s(s_), rep(rep_) {}
@@ -30,4 +34,8 @@ private:
 	};
 	
 	std::vector<Substitution> substitutions;
+
+	std::vector<std::string> relators;
+	CanonicalName* impl;
+	static std::map<std::string, CanonicalName*> cache;
 };

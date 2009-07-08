@@ -12,6 +12,8 @@
 
 using namespace std;
 
+std::map<std::string, CanonicalName*> CanonicalName::cache;
+
 int gPower(string s)
 {
 	string::size_type p;
@@ -43,8 +45,30 @@ string CanonicalName::inverse(string s)
 	return s;
 }
 
-
 CanonicalName::CanonicalName()
+{
+	impl = 0;
+}
+
+void CanonicalName::initImpl()
+{
+	string implName;
+	for (vector<string>::iterator it = relators.begin(); it != relators.end(); ++it) {
+		implName += *it + ",";
+	}
+	impl = cache[implName];
+	if (!impl) {
+		impl = new CanonicalName();
+		cache[implName] = impl;
+		impl->initSubstitutions();
+		for (vector<string>::iterator it = relators.begin(); it != relators.end(); ++it) {
+			impl->addRelatorInternal(*it);
+		}
+	}
+}
+
+
+void CanonicalName::initSubstitutions()
 {
 	substitutions.push_back(Substitution("nm", "mn"));
 	substitutions.push_back(Substitution("nM", "Mn"));
@@ -91,6 +115,11 @@ void CanonicalName::addSubstitution(string& a, string& b)
 }
 
 void CanonicalName::addRelator(string relator)
+{
+	relators.push_back(relator);
+}
+
+void CanonicalName::addRelatorInternal(string relator)
 {
 	string rr(relator + relator);
 	string::size_type l = relator.size();
@@ -140,8 +169,12 @@ string CanonicalName::getClass(string& s)
 
 string CanonicalName::getCanonicalName(string s)
 {
-	s = reduce(inverse(reduce(inverse(s))));
-	return s;
+	if (!impl) {
+		initImpl();
+	}
+	string result = impl->reduce(inverse(impl->reduce(inverse(s))));
+	//fprintf(stderr, "CanonicalName(%s) = %s\n", s.c_str(), result.c_str());
+	return result;
 }
 
 string CanonicalName::getCanonicalClass(string s)
