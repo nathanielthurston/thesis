@@ -173,7 +173,7 @@ bool refineRecursive(NamedBox box, PartialTree& t, int depth, TestHistory& histo
 	if (g_options.ballSearchDepth >= 0 && (g_options.improveTree || !t.lChild)) {
 		while (depth - searchedDepth > g_options.ballSearchDepth) {
 			NamedBox& searchPlace = place[++searchedDepth];
-			vector<string> searchWords = findWords( searchPlace.center(), vector<string>(), -200, g_options.maxWordLength, box.qr.allWords());
+			vector<string> searchWords = findWords( searchPlace.center(), vector<string>(), -200, g_options.maxWordLength, box.qr.wordClasses());
 			fprintf(stderr, "search (%s) found %s(%s)\n",
 				searchPlace.qr.desc().c_str(), searchWords.back().c_str(), searchPlace.name.c_str());
 			g_tests.add(searchWords.back());
