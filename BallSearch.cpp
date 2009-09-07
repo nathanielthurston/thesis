@@ -37,6 +37,16 @@ namespace BallSearchImpl {
 			return a.distance < b.distance;
 		}
 	};
+
+	int gPower(Word w)
+	{
+		int gCount = 0;
+		for (string::size_type pos = 0; pos < w.name.size(); ++pos)
+			if (w.name[pos] == 'g' || w.name[pos] == 'G')
+				++gCount;
+		return gCount;
+	}
+
 	
 	Word operator * (const Word& lhs, const LatticePoint& rhs);
 	Word operator * (const Word& lhs, const Word& rhs);
@@ -244,21 +254,21 @@ namespace BallSearchImpl {
 					break;
 			if (result.nameClass != "" && it == words.end()) {
 				double sizeRatio = norm(result.matrix.c) / norm(words.front().matrix.c);
-				//fprintf(stderr, "%s: sizeRatio = %f\n", result.name.c_str(), sizeRatio);
+				//fprintf(stderr, "%s: sizeRatio = %f gPower = %d\n", result.name.c_str(), sizeRatio, gPower(result));
 				if (sizeRatio < 1) {
 					m_foundBigBall = true;
 				}
 				return result;
 			}
-//			fprintf(stderr, "rejecting %s^-1 *(%d,%d) %s = %s -> %s (%s)\n",
-//				largest.firstWord->name.c_str(),
-//				largest.distances[largest.distanceIndex-1].x,
-//				largest.distances[largest.distanceIndex-1].y,
-//				largest.secondWord->name.c_str(),
-//				oldName.c_str(),
-//				result.name.c_str(),
-//				result.nameClass.c_str()
-//			);
+			//fprintf(stderr, "rejecting %s^-1 *(%d,%d) %s = %s -> %s (%s)\n",
+				//largest.firstWord->name.c_str(),
+				//largest.distances[largest.distanceIndex-1].x,
+				//largest.distances[largest.distanceIndex-1].y,
+				//largest.secondWord->name.c_str(),
+				//oldName.c_str(),
+				//result.name.c_str(),
+				//result.nameClass.c_str()
+			//);
 			//printf("duplicate; resorting\n");
 		}
 	}
@@ -267,15 +277,6 @@ namespace BallSearchImpl {
 	{
 		canonicalName.addRelator(w);
 	}
-}
-
-int gPower(BallSearchImpl::Word w)
-{
-	int gCount = 0;
-	for (string::size_type pos = 0; pos < w.name.size(); ++pos)
-		if (w.name[pos] == 'g' || w.name[pos] == 'G')
-			++gCount;
-	return gCount;
 }
 
 vector<string> findWords(Params<Complex> center, vector<string> seedWords, int numWords, int maxLength,
@@ -293,8 +294,10 @@ vector<string> findWords(Params<Complex> center, vector<string> seedWords, int n
 	vector<string> foundWords;
 	while (numWords > int(foundWords.size()) || (-numWords > int(foundWords.size()) && !search.foundBigBall())) {
 		BallSearchImpl::Word w = search.findWord();
-		if (gPower(w) > maxLength)
+		if (gPower(w) > maxLength) {
+			search.m_foundBigBall = false;
 			continue;
+		}
 		//fprintf(stderr, "adding %s\n", w.name.c_str());
 		search.pushWord(w);
 		foundWords.push_back(w.nameClass);

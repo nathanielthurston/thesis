@@ -84,7 +84,7 @@ void CanonicalName::initSubstitutions()
 
 void CanonicalName::addSubstitution(string& a, string& b)
 {
-//	printf("addSub(%s,%s)\n", a.c_str(), b.c_str());
+	//fprintf(stderr, "addSub(%s,%s)\n", a.c_str(), b.c_str());
 	string ac = reduce(a);
 	string bc = reduce(b);
 	if (ac == bc)
@@ -92,7 +92,7 @@ void CanonicalName::addSubstitution(string& a, string& b)
 	int ap = gPower(ac);
 	int bp = gPower(bc);
 	if (ap < bp) {
-		if (getClass(ac) == bc)
+		if (getClass(bc) == bc)
 			substitutions.push_back(Substitution(bc, ac));
 	} else if (ap > bp) {
 		if (getClass(ac) == ac)
@@ -121,6 +121,7 @@ void CanonicalName::addRelator(string relator)
 
 void CanonicalName::addRelatorInternal(string relator)
 {
+	//fprintf(stderr, "addRelatorInternal(%s)\n", relator.c_str());
 	string rr(relator + relator);
 	string::size_type l = relator.size();
 	string::size_type sl;
@@ -145,8 +146,9 @@ string CanonicalName::reduce(string s)
 			string::size_type pos = s.find(it->s);
 			if (pos != string::npos) {
 				done = false;
+				//fprintf(stderr, "replacing in %s: %s -> %s\n", s.c_str(), it->s.c_str(), it->rep.c_str());
 				s.replace(pos, it->s.length(), it->rep);
-				if (visited.find(s) != visited.end()) {
+				if (visited.find(s) != visited.end() || s.length() > 50) {
 					fprintf(stderr, "loop detected in %s\n", s.c_str());
 					return s;
 				}

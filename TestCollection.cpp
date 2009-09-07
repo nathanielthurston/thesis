@@ -127,24 +127,9 @@ GL2ACJ TestCollection::evaluate1(string word, Params<AComplex1Jet>& params)
 	return w;
 }
 
-bool TestCollection::validIdentity(string word, int xLattice, int yLattice, Params<AComplex1Jet>& params)
+bool TestCollection::validIdentity(string word, Box& box)
 {
-	while (xLattice > 0) {
-		--xLattice;
-		word += "m";
-	}
-	while (xLattice < 0) {
-		++xLattice;
-		word += "M";
-	}
-	while (yLattice > 0) {
-		--yLattice;
-		word += "n";
-	}
-	while (yLattice < 0) {
-		++yLattice;
-		word += "N";
-	}
+	Params<AComplex1Jet> params = box.cover();
 	for (string::size_type pos = 0; pos < word.size(); ++pos) {
 		string pword = word.substr(pos, word.size()-pos) + word.substr(0, pos);
 		GL2ACJ w(evaluate1(pword, params));
@@ -157,13 +142,13 @@ bool TestCollection::validIdentity(string word, int xLattice, int yLattice, Para
 	return true;
 }
 
-int TestCollection::evaluate(string word, Params<AComplex1Jet>& params, bool isNotIdentity)
+int TestCollection::evaluate(string word, Params<AComplex1Jet>& params, bool isNotParabolic)
 {
 	GL2ACJ w(evaluate1(word, params));
 	GL2ACJ G(constructG(params));
 	GL2ACJ g(~G);
-	if (isNotIdentity) {
-		return minabs(w.b) > 0 || minabs(w.c) > 0
+	if (isNotParabolic) {
+		return minabs(w.c) > 0
 		|| minabs(w.a-1) > 0 && minabs(w.a+1) > 0
 		|| minabs(w.d-1) > 0 && minabs(w.d+1) > 0;
 	}
@@ -210,10 +195,7 @@ int TestCollection::evaluate(string word, Params<AComplex1Jet>& params, bool isN
 				} else {
 					g_xLattice = xLattice;
 					g_yLattice = yLattice;
-					if (validIdentity(word, xLattice, yLattice, params))
-						return 6;
-					else
-						return 7;
+					return 6;
 				}
 			}
 			for (list<string>::iterator it = mandatory.begin(); it != mandatory.end(); ++it) {

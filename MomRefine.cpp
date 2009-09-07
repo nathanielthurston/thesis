@@ -28,7 +28,7 @@ struct Options {
 		improveTree(false),
 		ballSearchDepth(-1),
 		fillHoles(false),
-		maxWordLength(10) {}
+		maxWordLength(20) {}
 	const char* boxName;
 	const char* wordsFile;
 	const char* powersFile;
@@ -138,6 +138,8 @@ string relatorName(int testNumber)
 bool isEliminated(int i, int n, NamedBox& box) {
 	if (n == 6) {
 		string w = box.qr.getName(relatorName(i));
+		if (!g_tests.validIdentity(w, box))
+			return true;
 		if (g_momVarieties.find(w) != g_momVarieties.end()) {
 			fprintf(stderr, "mom variety %s(%s)\n", w.c_str(), box.name.c_str());
 			return true;
@@ -148,7 +150,7 @@ bool isEliminated(int i, int n, NamedBox& box) {
 		}
 	}
 
-	return (n == 1 || n == 3 || n == 4 || n == 5 || n == 7);
+	return (n == 1 || n == 3 || n == 4 || n == 5);
 }
 
 int treeSize(PartialTree& t) {
@@ -182,6 +184,7 @@ bool refineRecursive(NamedBox box, PartialTree& t, int depth, TestHistory& histo
 	}
 	
 	if (g_options.improveTree || !t.lChild) {
+		map<string, int> hackIndex;
 		for (int i = 0; i < g_tests.size(); ++i) {
 			vector<bool>& th = history[i];
 			while (th.size() <= depth && (th.size() < depth-6 || th.empty() || th.back())) {
@@ -204,6 +207,7 @@ bool refineRecursive(NamedBox box, PartialTree& t, int depth, TestHistory& histo
 					return true;
 				} else if (result == 6) {
 					string w = box.qr.getName(relatorName(i));
+					hackIndex[w] = i;
 					if (g_momVarieties.find(w) != g_momVarieties.end()) {
 						t.testIndex = i;
 						fprintf(stderr, "mom variety %s(%s)\n", w.c_str(), box.name.c_str());
@@ -214,11 +218,15 @@ bool refineRecursive(NamedBox box, PartialTree& t, int depth, TestHistory& histo
 						fprintf(stderr, "parameterized variety %s(%s)\n", w.c_str(), box.name.c_str());
 						return true;
 					}
-				} else if (result == 7) {
-					fprintf(stderr, "invalid identity %s(%s)\n", g_tests.getName(i), box.name.c_str());
-					t.testIndex = i;
-					return true;
 				}
+			}
+		}
+		vector<string> quasiRelators = box.qr.wordClasses();
+		for (vector<string>::iterator it = quasiRelators.begin(); it != quasiRelators.end(); ++it) {
+			if (!g_tests.validIdentity(*it, box)) {
+				fprintf(stderr, "invalid identity %s(%s)\n", it->c_str(), box.name.c_str());
+				t.testIndex = hackIndex[*it];
+				return true;
 			}
 		}
 	}

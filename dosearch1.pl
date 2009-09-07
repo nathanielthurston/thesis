@@ -20,14 +20,14 @@ foreach (@seenWords) {
 	$seenWord{$_} = 1;
 }
 #@seenWords = `sortUniq $srcDir/*out $destDir/*out`;
-@seenWords = `sortUniq $destDir/*out`;
-foreach (@seenWords) {
-	chomp;
-	($null, $count, $word) = split(/\s+/);
-	next if $word =~ /\d/ || $word eq 'HOLE' || $word eq 'X';
-	print $word, "\n" unless defined $seenWord{$word};
-	$seenWord{$_} = 1;
-}
+#@seenWords = `sortUniq $destDir/*out`;
+#foreach (@seenWords) {
+#	chomp;
+#	($null, $count, $word) = split(/\s+/);
+#	next if $word =~ /\d/ || $word eq 'HOLE' || $word eq 'X';
+#	print $word, "\n" unless defined $seenWord{$word};
+#	$seenWord{$_} = 1;
+#}
 
 for (;;) {
 	if ($childCount >= $childLimit) {
@@ -40,9 +40,11 @@ for (;;) {
 
 		$numPatched = `grep -c Patched $destDir/$doneHole.err`;
 		$numUnpatched = `grep -c Unpatched $destDir/$doneHole.err`;
+		$numHoles = `grep -c HOLE $destDir/$doneHole.err`;
 		chomp $numPatched;
 		chomp $numUnpatched;
-		print "Holes: $numPatched patched, $numUnpatched unpatched\n";
+		chomp $numHoles;
+		print "Holes: $numPatched patched, $numUnpatched unpatched, $numHoles holes\n";
 		@newWords = ();
 		@seenWords = `sortuniq $destDir/$doneHole.out`;
 		chomp @seenWords;
@@ -73,15 +75,14 @@ for (;;) {
 	++$childCount;
 	$pid = fork;
 	if ($pid == 0) {
-		$searchWords = "-B 6";
+		$searchWords = "-B 9";
 		if ($bestHole eq '') {
 			$bestHole = 'root';
 			$searchWords = '';
 		}
-		$command = "./treecat $srcDir $bestHole | ./refine -b $bestHole -m 36 -t 6 -i 36 -s 3000000 -w allWords_s6 $searchWords -a 5.1 -M /dev/null -P twoHoleRelators > $destDir/$bestHole.out 2> $destDir/$bestHole.err";
+		$command = "./treecat $srcDir $bestHole | ./refine -b $bestHole -m 42 -t 6 -i 42 -s 3000000 -w allWords_s6 $searchWords -a 5 -M /dev/null -P /dev/null > $destDir/$bestHole.out 2> $destDir/$bestHole.err";
 		$first = `./treecat $srcDir $bestHole | head -1`;
 		chomp $first;
-		print "first = $first\n";
 		if ($first eq 'HOLE') {
 			$command =~ s/$srcDir/$backingDir/;
 		}
